@@ -13,29 +13,33 @@ import (
 )
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	format := vars["format"]
+	
+	format := r.Header.Get("x-format")
 
 	database.Connect()
-	repository.Init(database.DB)
 	users := repository.GetAllUsers()
-	// if users==nil || len(users)<=0{
-		models.SendData(w,users,format)
-	// }
+	models.SendData(w, users, format)
 }
 
 func GetOneUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
-	database.Connect()
-	repository.Init(database.DB)
-	user := repository.GetOneUser(id)
-	output, _ := json.Marshal(user)
 
-	database.Close()
-	fmt.Fprintln(w, string(output))
+	vars := mux.Vars(r)
+	format := r.Header.Get("x-format")
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		models.SendNotProcesableEntity(w, format)
+		return
+	}
+
+	database.Connect()
+	user := repository.GetOneUser(id)
+	if user.Id == 0 {
+		models.SendNotFound(w, format)
+		return
+	}
+
+	models.SendData(w, user, format)
+
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +93,7 @@ func RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	database.Connect()
-	user,_ := models.GetUser(database.DB, id)
+	user, _ := models.GetUser(database.DB, id)
 	user.Delete(database.DB)
 	database.Close()
 	output, _ := json.Marshal(user)

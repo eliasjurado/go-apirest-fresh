@@ -33,7 +33,7 @@ func CreateDefaultResponse(w http.ResponseWriter) Response {
 }
 
 func (resp *Response) Send(format string) {
-	resp.w.Header().Set("Content-Type", resp.contentType)
+	// resp.w.Header().Set("Content-Type", resp.contentType)
 	resp.w.WriteHeader(resp.Status)
 
 	var output []byte
@@ -41,9 +41,10 @@ func (resp *Response) Send(format string) {
 	switch format {
 	case "xml":
 		output, _ = xml.Marshal(&resp)
-		resp.w.Header().Set("Content-Type", "text/xml")
+		resp.w.Header().Set("Content-Type", "application/xml")
 	case "yaml":
 		output, _ = yaml.Marshal(&resp)
+		resp.w.Header().Set("Content-Type", "application/yaml")
 	default:
 		output, _ = json.Marshal(&resp)
 		resp.w.Header().Set("Content-Type", "application/json")
@@ -59,7 +60,9 @@ func SendData(w http.ResponseWriter, data interface{}, format string) {
 }
 
 func (r *Response) NotFound() {
+	r.IsSuccess = false
 	r.Status = http.StatusNotFound
+	r.StatusCode = "Not Found"
 	r.Message = "Resource Not Found"
 }
 
@@ -70,7 +73,9 @@ func SendNotFound(w http.ResponseWriter, format string) {
 }
 
 func (r *Response) NotProcesableEntity() {
+	r.IsSuccess = false
 	r.Status = http.StatusUnprocessableEntity
+	r.StatusCode = "Unprocessable Entity"
 	r.Message = "Invalid Input"
 }
 

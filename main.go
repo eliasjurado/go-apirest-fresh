@@ -16,8 +16,8 @@ func main() {
 	database.Connect()
 	repository.Init(database.DB)
 
-	mux := mux.NewRouter()		
-	mux.HandleFunc("/api/user/{format:[a-z]+|}", handlers.GetAllUsers).Methods("GET")	
+	mux := mux.NewRouter()	
+	mux.HandleFunc("/api/user/", handlers.GetAllUsers).Methods("GET")	
 	mux.HandleFunc("/api/user/{id:[0-9]+}", handlers.GetOneUser).Methods("GET")	
 	mux.HandleFunc("/api/user/", handlers.CreateUser).Methods("POST")
 	mux.HandleFunc("/api/user/{id:[0-9]+}", handlers.UpdateUser).Methods("PUT")
