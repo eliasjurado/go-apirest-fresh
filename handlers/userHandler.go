@@ -104,7 +104,7 @@ func RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	database.Connect()
-	user := models.GetUser(database.DB, id)
+	user,_ := models.GetUser(database.DB, id)
 	user.Delete(database.DB)
 	database.Close()
 	output, _ := json.Marshal(user)

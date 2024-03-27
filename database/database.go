@@ -41,16 +41,21 @@ func TruncateTable(tableName string) {
 
 // Polimorfismo a Exec
 func Exec(query string, args ...interface{}) (sql.Result, error) {
+	Connect()
 	result, err := DB.Exec(query, args...)
+	Close()
 	if err != nil {
 		fmt.Println(err)
 	}
+	
 	return result, err
 }
 
 // Polimorfismo a Query
 func Query(query string, args ...interface{}) (*sql.Rows, error) {
+	Connect()
 	rows, err := DB.Query(query, args...)
+	Close()
 	if err != nil {
 		fmt.Println(err)
 	}

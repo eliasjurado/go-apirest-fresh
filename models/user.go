@@ -39,28 +39,32 @@ func (user *User) insert(db *sql.DB) {
 }
 
 // Obtener todo el registro
-func ListUsers(db *sql.DB) Users {
+func ListUsers(db *sql.DB) (Users, error) {
 	sql := "SELECT id, username, password, email FROM users"
 	users := Users{}
-	rows, _ := db.Query(sql)
+	rows, err := db.Query(sql)
 
 	for rows.Next() {
 		user := User{}
 		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Email)
 		users = append(users, user)
 	}
-	return users
+	return users, err
 }
 
 // Obtener un Registro
-func GetUser(db *sql.DB, id int) *User {
+func GetUser(db *sql.DB, id int) (*User, error) {
 	user := NewUser("", "", "")
 	sql := "SELECT id, username, password, email FROM users WHERE id=?"
-	rows, _ := db.Query(sql, id)
-	for rows.Next() {
-		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Email)
+	rows, err := db.Query(sql, id)
+	if err != nil {
+		return nil, err
+	} else {
+		for rows.Next() {
+			rows.Scan(&user.Id, &user.Username, &user.Password, &user.Email)
+		}
+		return user, nil
 	}
-	return user
 }
 
 // Actualizar Registro
