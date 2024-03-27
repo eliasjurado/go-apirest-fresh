@@ -2,8 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"net/http"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Response struct {
@@ -19,24 +22,40 @@ type Response struct {
 
 func CreateDefaultResponse(w http.ResponseWriter) Response {
 	return Response{
+		IsSuccess:   true,
 		Status:      http.StatusOK,
+		StatusCode:  "OK",
+		Message:     "Users retrieved successfully",
+		Metadata:    []string{},
 		w:           w,
 		contentType: "application/json",
 	}
 }
 
-func (resp *Response) Send() {
+func (resp *Response) Send(format string) {
 	resp.w.Header().Set("Content-Type", resp.contentType)
 	resp.w.WriteHeader(resp.Status)
 
-	output, _ := json.Marshal(&resp)
+	var output []byte
+
+	switch format {
+	case "xml":
+		output, _ = xml.Marshal(&resp)
+		resp.w.Header().Set("Content-Type", "text/xml")
+	case "yaml":
+		output, _ = yaml.Marshal(&resp)
+	default:
+		output, _ = json.Marshal(&resp)
+		resp.w.Header().Set("Content-Type", "application/json")
+	}
+
 	fmt.Fprintln(resp.w, string(output))
 }
 
-func SendData(w http.ResponseWriter, data interface{}) {
+func SendData(w http.ResponseWriter, data interface{}, format string) {
 	response := CreateDefaultResponse(w)
 	response.Data = data
-	response.Send()
+	response.Send(format)
 }
 
 func (r *Response) NotFound() {
@@ -44,10 +63,10 @@ func (r *Response) NotFound() {
 	r.Message = "Resource Not Found"
 }
 
-func SendNotFound(w http.ResponseWriter) {
+func SendNotFound(w http.ResponseWriter, format string) {
 	response := CreateDefaultResponse(w)
 	response.NotFound()
-	response.Send()
+	response.Send(format)
 }
 
 func (r *Response) NotProcesableEntity() {
@@ -55,8 +74,8 @@ func (r *Response) NotProcesableEntity() {
 	r.Message = "Invalid Input"
 }
 
-func SendNotProcesableEntity(w http.ResponseWriter) {
+func SendNotProcesableEntity(w http.ResponseWriter, format string) {
 	response := CreateDefaultResponse(w)
 	response.NotProcesableEntity()
-	response.Send()
+	response.Send(format)
 }

@@ -5,13 +5,11 @@ import (
 	"apirest/models"
 	"apirest/repository"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"gopkg.in/yaml.v3"
 )
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -22,22 +20,9 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	database.Connect()
 	repository.Init(database.DB)
 	users := repository.GetAllUsers()
-
-	var output []byte
-
-	switch format {
-	case "xml":
-		output, _ = xml.Marshal(users)
-		w.Header().Set("Content-Type", "text/xml")
-	case "yaml":
-		output, _ = yaml.Marshal(users)
-	default:
-		output, _ = json.Marshal(users)
-		w.Header().Set("Content-Type", "application/json")
-	}
-
-	database.Close()
-	fmt.Fprintln(w, string(output))
+	// if users==nil || len(users)<=0{
+		models.SendData(w,users,format)
+	// }
 }
 
 func GetOneUser(w http.ResponseWriter, r *http.Request) {
